@@ -114,7 +114,3 @@ npm run dev
 |--------|----------|-------|
 | POST | /api/bookings | Đặt vé |
 | GET | /api/bookings/my | Lịch sử đặt vé |
-<<<<<<< HEAD
-=======
-
->>>>>>> b7fe6695912f0fec35c0747c374f88b509f67b9e
