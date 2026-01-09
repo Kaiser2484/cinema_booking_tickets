@@ -15,7 +15,7 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      config. headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -34,7 +34,7 @@ export const authAPI = {
 
 // ============ MOVIE API ============
 export const movieAPI = {
-  getAll: (params) => api.get('/movies', { params }),
+  getAll:  (params) => api.get('/movies', { params }),
   getNowShowing: () => api.get('/movies/now-showing'),
   getComingSoon: () => api.get('/movies/coming-soon'),
   getById: (id) => api.get(`/movies/${id}`),
@@ -47,9 +47,14 @@ export const movieAPI = {
 export const cinemaAPI = {
   getAll: (params) => api.get('/cinemas', { params }),
   getById: (id) => api.get(`/cinemas/${id}`),
-  getRooms: (cinemaId) => api.get(`/cinemas/${cinemaId}/rooms`),
   create: (data) => api.post('/cinemas', data),
-  createRoom: (cinemaId, data) => api.post(`/cinemas/${cinemaId}/rooms`, data)
+  update: (id, data) => api.put(`/cinemas/${id}`, data),
+  delete: (id) => api.delete(`/cinemas/${id}`),
+  // Rooms
+  getRooms: (cinemaId) => api.get(`/cinemas/${cinemaId}/rooms`),
+  createRoom: (cinemaId, data) => api.post(`/cinemas/${cinemaId}/rooms`, data),
+  updateRoom: (roomId, data) => api.put(`/rooms/${roomId}`, data),
+  deleteRoom: (roomId) => api.delete(`/rooms/${roomId}`)
 };
 
 // ============ SHOWTIME API ============
@@ -66,9 +71,10 @@ export const showtimeAPI = {
 export const bookingAPI = {
   create: (data) => api.post('/bookings', data),
   getMyBookings: () => api.get('/bookings/my'),
-  getById:  (id) => api.get(`/bookings/${id}`),
+  getById: (id) => api.get(`/bookings/${id}`),
+  getAll: (params) => api.get('/bookings', { params }),
   cancel: (id) => api.put(`/bookings/${id}/cancel`),
-  getAll: (params) => api.get('/bookings', { params })
+  confirm: (id) => api.put(`/bookings/${id}/confirm`)
 };
 
 export default api;

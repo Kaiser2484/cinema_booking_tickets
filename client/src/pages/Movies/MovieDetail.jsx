@@ -14,12 +14,14 @@ const MovieDetail = () => {
 
   useEffect(() => {
     fetchMovieDetail();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
     if (movie) {
       fetchShowtimes();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [movie, selectedDate]);
 
   const fetchMovieDetail = async () => {
