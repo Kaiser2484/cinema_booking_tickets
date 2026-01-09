@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
 
   // Kiểm tra đăng nhập khi load trang
   useEffect(() => {
-    const token = localStorage. getItem('token');
+    const token = localStorage.getItem('token');
     if (token) {
       loadUser();
     } else {
@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
   const loadUser = async () => {
     try {
       const response = await authAPI.getMe();
-      setUser(response.data. data);
+      setUser(response.data.data);
     } catch (error) {
       localStorage.removeItem('token');
       setUser(null);
@@ -36,20 +36,20 @@ export const AuthProvider = ({ children }) => {
 
   // Đăng ký
   const register = async (userData) => {
-    const response = await authAPI. register(userData);
-    const { token, ... user } = response. data.data;
+    const response = await authAPI.register(userData);
+    const { token, ...user } = response.data.data;
     localStorage.setItem('token', token);
     setUser(user);
-    return response. data;
+    return response.data;
   };
 
   // Đăng nhập
   const login = async (credentials) => {
     const response = await authAPI.login(credentials);
-    const { token, ...user } = response.data. data;
+    const { token, ...user } = response.data.data;
     localStorage.setItem('token', token);
     setUser(user);
-    return response. data;
+    return response.data;
   };
 
   // Đăng xuất
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
   // Cập nhật profile
   const updateProfile = async (userData) => {
     const response = await authAPI.updateProfile(userData);
-    const { token, ...user } = response.data. data;
+    const { token, ...user } = response.data.data;
     if (token) {
       localStorage.setItem('token', token);
     }
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     updateProfile,
-    isAuthenticated: !! user,
+    isAuthenticated: !!user,
     isAdmin: user?.role === 'admin'
   };
 

@@ -1,0 +1,128 @@
+.auth-page {
+  min-height: calc(100vh - 140px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+}
+
+.auth-container {
+  background: #1a1a2e;
+  border-radius: 15px;
+  padding: 40px;
+  width: 100%;
+  max-width:  450px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.auth-icon {
+  font-size: 48px;
+  color: #e94560;
+  margin-bottom: 15px;
+}
+
+.auth-header h2 {
+  color: #fff;
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.auth-header p {
+  color: #888;
+  font-size: 16px;
+}
+
+.auth-form {
+  display:  flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display:  flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: #ccc;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-group input {
+  background: #16213e;
+  border: 2px solid #16213e;
+  border-radius: 10px;
+  padding: 15px;
+  color: #fff;
+  font-size: 16px;
+  transition:  border-color 0.3s;
+}
+
+.form-group input:focus {
+  outline:  none;
+  border-color: #e94560;
+}
+
+.form-group input::placeholder {
+  color: #666;
+}
+
+.btn-submit {
+  background: #e94560;
+  color:  #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 10px;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #ff6b6b;
+  transform: translateY(-2px);
+}
+
+.btn-submit:disabled {
+  background: #666;
+  cursor:  not-allowed;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top:  25px;
+  padding-top: 25px;
+  border-top: 1px solid #333;
+}
+
+.auth-footer p {
+  color: #888;
+}
+
+.auth-footer a {
+  color: #e94560;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 30px 20px;
+  }
+}

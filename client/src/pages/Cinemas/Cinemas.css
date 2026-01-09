@@ -1,0 +1,220 @@
+.cinemas-page {
+  min-height: calc(100vh - 140px);
+  padding: 40px 20px;
+}
+
+.cinemas-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.cinemas-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.cinemas-header h1 {
+  color: #fff;
+  font-size: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.cinemas-header p {
+  color: #888;
+  font-size: 18px;
+}
+
+/* City Filter */
+.city-filter {
+  display:  flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.city-btn {
+  padding: 10px 20px;
+  background: #1a1a2e;
+  border: 2px solid #1a1a2e;
+  border-radius: 25px;
+  color: #ccc;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.city-btn:hover {
+  border-color: #e94560;
+  color: #fff;
+}
+
+.city-btn.active {
+  background: #e94560;
+  border-color: #e94560;
+  color: #fff;
+}
+
+/* Cinemas Grid */
+.cinemas-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+}
+
+.cinema-card {
+  background:  #1a1a2e;
+  border-radius: 15px;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.cinema-card:hover {
+  transform: translateY(-5px);
+  box-shadow:  0 10px 30px rgba(233, 69, 96, 0.2);
+}
+
+.cinema-image {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+}
+
+.cinema-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cinema-placeholder {
+  width: 100%;
+  height: 100%;
+  background:  linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+  display: flex;
+  align-items: center;
+  justify-content:  center;
+  font-size: 50px;
+  color: #333;
+}
+
+.cinema-city {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #e94560;
+  color: #fff;
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cinema-info {
+  padding:  25px;
+}
+
+.cinema-info h3 {
+  color: #fff;
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.cinema-details {
+  margin-bottom: 15px;
+}
+
+.cinema-details p {
+  color:  #888;
+  font-size: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.cinema-details p svg {
+  color: #e94560;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.cinema-facilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap:  8px;
+  margin-bottom: 15px;
+}
+
+.facility-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(233, 69, 96, 0.15);
+  color: #e94560;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+}
+
+.cinema-rooms {
+  background: #16213e;
+  display: inline-block;
+  padding: 8px 15px;
+  border-radius: 8px;
+  color: #ccc;
+  font-size: 13px;
+  margin-bottom: 15px;
+}
+
+.cinema-description {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+  border-top: 1px solid #333;
+  padding-top: 15px;
+}
+
+/* No Cinemas */
+.no-cinemas {
+  text-align: center;
+  padding: 80px 20px;
+  color: #888;
+}
+
+.no-cinemas svg {
+  font-size: 60px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.no-cinemas p {
+  font-size: 18px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .cinemas-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .cinemas-header h1 {
+    font-size:  28px;
+  }
+
+  .city-filter {
+    gap: 8px;
+  }
+
+  .city-btn {
+    padding: 8px 15px;
+    font-size:  13px;
+  }
+}
