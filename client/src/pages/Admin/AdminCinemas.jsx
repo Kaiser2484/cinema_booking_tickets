@@ -19,6 +19,8 @@ const AdminCinemas = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingCinema, setEditingCinema] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -63,6 +65,22 @@ const AdminCinemas = () => {
     }));
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Kích thước ảnh không được vượt quá 5MB');
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleFacilityChange = (facility) => {
     const currentFacilities = formData.facilities ?  formData.facilities.split(', ').filter(f => f) : [];
     let newFacilities;
@@ -90,6 +108,8 @@ const AdminCinemas = () => {
       image:  '',
       facilities:  ''
     });
+    setImageFile(null);
+    setImagePreview('');
     setEditingCinema(null);
   };
 
@@ -100,6 +120,8 @@ const AdminCinemas = () => {
 
   const openEditModal = (cinema) => {
     setEditingCinema(cinema);
+    setImageFile(null);
+    setImagePreview(cinema.image || '');
     setFormData({
       name: cinema.name || '',
       address:  cinema.address || '',
@@ -116,12 +138,24 @@ const AdminCinemas = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const cinemaData = {
-      ...formData,
-      facilities: formData.facilities.split(',').map(f => f.trim()).filter(f => f)
-    };
-
     try {
+      let imageUrl = formData.image;
+
+      // Upload image if file is selected
+      if (imageFile) {
+        const formDataUpload = new FormData();
+        formDataUpload.append('image', imageFile);
+        
+        const uploadResponse = await cinemaAPI.uploadImage(formDataUpload);
+        imageUrl = uploadResponse.data.url;
+      }
+
+      const cinemaData = {
+        ...formData,
+        image: imageUrl,
+        facilities: formData.facilities.split(',').map(f => f.trim()).filter(f => f)
+      };
+
       if (editingCinema) {
         await cinemaAPI.update(editingCinema._id, cinemaData);
         toast.success('Cập nhật rạp thành công! ');
@@ -328,15 +362,38 @@ const AdminCinemas = () => {
               </div>
 
               <div className="form-group">
-                <label>URL Hình ảnh</label>
+                <label>Hình ảnh rạp</label>
+                <div className="file-input-wrapper">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    id="image-upload"
+                    className="file-input"
+                  />
+                  <label htmlFor="image-upload" className="file-input-label">
+                    <FaPlus /> {imageFile ? imageFile.name : 'Chọn ảnh từ máy tính'}
+                  </label>
+                </div>
+                <small style={{ color: '#888', display: 'block', marginTop: '5px' }}>
+                  Hoặc nhập URL ảnh:
+                </small>
                 <input
                   type="url"
                   name="image"
                   value={formData.image}
                   onChange={handleChange}
                   placeholder="https://example.com/cinema.jpg"
+                  style={{ marginTop: '8px' }}
                 />
               </div>
+
+              {imagePreview && (
+                <div className="poster-preview">
+                  <label>Xem trước hình ảnh:</label>
+                  <img src={imagePreview} alt="Preview" />
+                </div>
+              )}
 
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>

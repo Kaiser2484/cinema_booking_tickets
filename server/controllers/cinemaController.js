@@ -158,37 +158,42 @@ const getRoomsByCinema = async (req, res) => {
 };
 
 // @desc    Tạo phòng mới
-// @route   POST /api/cinemas/: cinemaId/rooms
+// @route   POST /api/cinemas/:cinemaId/rooms
 // @access  Private/Admin
 const createRoom = async (req, res) => {
   try {
-    console.log('=== CREATE ROOM ===');           // 👈 Thêm
-    console.log('cinemaId:', req. params.cinemaId); // 👈 Thêm
-    console.log('body:', req.body);                // 👈 Thêm
+    console.log('=== CREATE ROOM ===');
+    console.log('cinemaId:', req.params.cinemaId);
+    console.log('body:', req.body);
 
-    req.body. cinema = req.params.cinemaId;
+    req.body.cinema = req.params.cinemaId;
 
     // Kiểm tra rạp tồn tại
     const cinema = await Cinema.findById(req.params.cinemaId);
-    console.log('cinema found:', cinema);       
+    console.log('cinema found:', cinema);
 
     if (!cinema) {
       return res.status(404).json({
         success: false,
-        message:  'Không tìm thấy rạp'
+        message: 'Không tìm thấy rạp'
       });
     }
 
+    // Tự động tính totalSeats
+    if (req.body.rows && req.body.seatsPerRow) {
+      req.body.totalSeats = req.body.rows * req.body.seatsPerRow;
+    }
+
     const room = await Room.create(req.body);
-    console.log('room created:', room);          
+    console.log('room created:', room);
 
     res.status(201).json({
       success: true,
-      data:  room
+      data: room
     });
   } catch (error) {
-    console.error('=== ERROR ===');             
-    console.error(error);                      
+    console.error('=== ERROR ===');
+    console.error(error);
     res.status(500).json({
       success: false,
       message: error.message
@@ -201,10 +206,15 @@ const createRoom = async (req, res) => {
 // @access  Private/Admin
 const updateRoom = async (req, res) => {
   try {
-    const room = await Room. findByIdAndUpdate(
-      req. params.id,
+    // Tự động tính totalSeats nếu có thay đổi rows hoặc seatsPerRow
+    if (req.body.rows && req.body.seatsPerRow) {
+      req.body.totalSeats = req.body.rows * req.body.seatsPerRow;
+    }
+
+    const room = await Room.findByIdAndUpdate(
+      req.params.id,
       req.body,
-      { new:  true, runValidators: true }
+      { new: true, runValidators: true }
     );
 
     if (!room) {
@@ -219,8 +229,8 @@ const updateRoom = async (req, res) => {
       data: room
     });
   } catch (error) {
-    res. status(500).json({
-      success:  false,
+    res.status(500).json({
+      success: false,
       message: error.message
     });
   }
@@ -252,6 +262,33 @@ const deleteRoom = async (req, res) => {
   }
 };
 
+// @desc    Upload cinema image
+// @route   POST /api/cinemas/upload-image
+// @access  Private/Admin
+const uploadImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng chọn file ảnh'
+      });
+    }
+
+    const url = `${req.protocol}://${req.get('host')}/uploads/posters/${req.file.filename}`;
+
+    res.status(200).json({
+      success: true,
+      url: url,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 module.exports = {
   getCinemas,
   getCinema,
@@ -261,5 +298,6 @@ module.exports = {
   getRoomsByCinema,
   createRoom,
   updateRoom,
-  deleteRoom
+  deleteRoom,
+  uploadImage
 };

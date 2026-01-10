@@ -40,7 +40,14 @@ export const movieAPI = {
   getById: (id) => api.get(`/movies/${id}`),
   create: (data) => api.post('/movies', data),
   update: (id, data) => api.put(`/movies/${id}`, data),
-  delete: (id) => api.delete(`/movies/${id}`)
+  delete: (id) => api.delete(`/movies/${id}`),
+  uploadPoster: (formData) => {
+    return api.post('/movies/upload-poster', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  }
 };
 
 // ============ CINEMA API ============
@@ -50,6 +57,13 @@ export const cinemaAPI = {
   create: (data) => api.post('/cinemas', data),
   update: (id, data) => api.put(`/cinemas/${id}`, data),
   delete: (id) => api.delete(`/cinemas/${id}`),
+  uploadImage: (formData) => {
+    return api.post('/cinemas/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
   // Rooms
   getRooms: (cinemaId) => api.get(`/cinemas/${cinemaId}/rooms`),
   createRoom: (cinemaId, data) => api.post(`/cinemas/${cinemaId}/rooms`, data),
@@ -75,6 +89,15 @@ export const bookingAPI = {
   getAll: (params) => api.get('/bookings', { params }),
   cancel: (id) => api.put(`/bookings/${id}/cancel`),
   confirm: (id) => api.put(`/bookings/${id}/confirm`)
+};
+
+// ============ GENRE API ============
+export const genreAPI = {
+  getAll: () => api.get('/genres'),
+  getById: (id) => api.get(`/genres/${id}`),
+  create: (data) => api.post('/genres', data),
+  update: (id, data) => api.put(`/genres/${id}`, data),
+  delete: (id) => api.delete(`/genres/${id}`)
 };
 
 export default api;

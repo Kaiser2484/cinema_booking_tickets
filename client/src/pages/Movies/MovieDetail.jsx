@@ -11,6 +11,7 @@ const MovieDetail = () => {
   const [showtimes, setShowtimes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [showTrailer, setShowTrailer] = useState(false);
 
   useEffect(() => {
     fetchMovieDetail();
@@ -67,6 +68,14 @@ const MovieDetail = () => {
     });
   };
 
+  // Lấy YouTube video ID từ URL
+  const getYouTubeId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
   // Nhóm suất chiếu theo rạp
   const groupShowtimesByCinema = () => {
     const grouped = {};
@@ -113,9 +122,12 @@ const MovieDetail = () => {
               onError={(e) => e.target.src = defaultPoster}
             />
             {movie.trailer && (
-              <a href={movie.trailer} target="_blank" rel="noopener noreferrer" className="btn-trailer">
+              <button 
+                onClick={() => setShowTrailer(true)} 
+                className="btn-trailer"
+              >
                 <FaPlay /> Xem Trailer
-              </a>
+              </button>
             )}
           </div>
 
@@ -220,6 +232,26 @@ const MovieDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Trailer Modal */}
+      {showTrailer && movie.trailer && (
+        <div className="trailer-modal-overlay" onClick={() => setShowTrailer(false)}>
+          <div className="trailer-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="trailer-close-btn" onClick={() => setShowTrailer(false)}>
+              ✕
+            </button>
+            <div className="trailer-wrapper">
+              <iframe
+                src={`https://www.youtube.com/embed/${getYouTubeId(movie.trailer)}?autoplay=1`}
+                title="Movie Trailer"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

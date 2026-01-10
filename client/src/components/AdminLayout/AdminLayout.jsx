@@ -11,7 +11,8 @@ import {
   FaBars,
   FaTimes,
   FaSignOutAlt,
-  FaArrowLeft
+  FaArrowLeft,
+  FaTheaterMasks
 } from 'react-icons/fa';
 import './AdminLayout.css';
 
@@ -24,6 +25,7 @@ const AdminLayout = () => {
   const menuItems = [
     { path: '/admin', icon: <FaChartBar />, label: 'Tổng quan', exact: true },
     { path: '/admin/movies', icon:  <FaFilm />, label: 'Quản lý Phim' },
+    { path: '/admin/genres', icon: <FaTheaterMasks />, label: 'Thể Loại' },
     { path: '/admin/cinemas', icon: <FaBuilding />, label: 'Quản lý Rạp' },
     { path: '/admin/rooms', icon: <FaDoorOpen />, label: 'Quản lý Phòng' },
     { path: '/admin/showtimes', icon:  <FaCalendarAlt />, label: 'Lịch Chiếu' },

@@ -7,9 +7,11 @@ const {
   getMovie,
   createMovie,
   updateMovie,
-  deleteMovie
+  deleteMovie,
+  uploadPoster
 } = require('../controllers/movieController');
 const { protect, admin } = require('../middlewares/auth');
+const upload = require('../middlewares/upload');
 
 // Public routes
 router.get('/', getMovies);
@@ -21,5 +23,6 @@ router.get('/:id', getMovie);
 router.post('/', protect, admin, createMovie);
 router.put('/:id', protect, admin, updateMovie);
 router.delete('/:id', protect, admin, deleteMovie);
+router.post('/upload-poster', protect, admin, upload.single('poster'), uploadPoster);
 
 module.exports = router;

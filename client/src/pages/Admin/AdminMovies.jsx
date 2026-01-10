@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { movieAPI } from '../../services/api';
+import { movieAPI, genreAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 import { 
   FaPlus, 
@@ -14,10 +14,13 @@ import './Admin.css';
 
 const AdminMovies = () => {
   const [movies, setMovies] = useState([]);
+  const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingMovie, setEditingMovie] = useState(null);
+  const [posterFile, setPosterFile] = useState(null);
+  const [posterPreview, setPosterPreview] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -34,12 +37,6 @@ const AdminMovies = () => {
     status: 'coming_soon'
   });
 
-  const genreOptions = [
-    'Hành động', 'Phiêu lưu', 'Hoạt hình', 'Hài', 'Tội phạm',
-    'Tài liệu', 'Chính kịch', 'Gia đình', 'Giả tưởng', 'Kinh dị',
-    'Lãng mạn', 'Khoa học viễn tưởng', 'Bí ẩn', 'Chiến tranh', 'Tâm lý'
-  ];
-
   const ratedOptions = ['P', 'C13', 'C16', 'C18'];
   const statusOptions = [
     { value: 'coming_soon', label:  'Sắp chiếu' },
@@ -49,6 +46,7 @@ const AdminMovies = () => {
 
   useEffect(() => {
     fetchMovies();
+    fetchGenres();
   }, []);
 
   const fetchMovies = async () => {
@@ -62,12 +60,37 @@ const AdminMovies = () => {
     }
   };
 
+  const fetchGenres = async () => {
+    try {
+      const response = await genreAPI.getAll();
+      setGenres(response.data.data);
+    } catch (error) {
+      console.error('Lỗi khi tải danh sách thể loại:', error);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Kích thước ảnh không được vượt quá 5MB');
+        return;
+      }
+      setPosterFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPosterPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleGenreChange = (genre) => {
@@ -102,6 +125,8 @@ const AdminMovies = () => {
       language: 'Tiếng Việt',
       status:  'coming_soon'
     });
+    setPosterFile(null);
+    setPosterPreview('');
     setEditingMovie(null);
   };
 
@@ -112,6 +137,8 @@ const AdminMovies = () => {
 
   const openEditModal = (movie) => {
     setEditingMovie(movie);
+    setPosterFile(null);
+    setPosterPreview(movie.poster || '');
     setFormData({
       title: movie.title || '',
       description:  movie.description || '',
@@ -133,14 +160,26 @@ const AdminMovies = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const movieData = {
-      ...formData,
-      duration: parseInt(formData.duration),
-      genres: formData.genres.split(',').map(g => g.trim()).filter(g => g),
-      cast: formData.cast.split(',').map(c => c.trim()).filter(c => c)
-    };
-
     try {
+      let posterUrl = formData.poster;
+
+      // Upload poster if file is selected
+      if (posterFile) {
+        const formDataUpload = new FormData();
+        formDataUpload.append('poster', posterFile);
+        
+        const uploadResponse = await movieAPI.uploadPoster(formDataUpload);
+        posterUrl = uploadResponse.data.url;
+      }
+
+      const movieData = {
+        ...formData,
+        poster: posterUrl,
+        duration: parseInt(formData.duration),
+        genres: formData.genres.split(',').map(g => g.trim()).filter(g => g),
+        cast: formData.cast.split(',').map(c => c.trim()).filter(c => c)
+      };
+
       if (editingMovie) {
         await movieAPI.update(editingMovie._id, movieData);
         toast.success('Cập nhật phim thành công!');
@@ -327,17 +366,22 @@ const AdminMovies = () => {
               <div className="form-group">
                 <label>Thể loại</label>
                 <div className="genre-checkboxes">
-                  {genreOptions.map(genre => (
-                    <label key={genre} className="checkbox-label">
+                  {genres.map(genre => (
+                    <label key={genre._id} className="checkbox-label">
                       <input
                         type="checkbox"
-                        checked={formData.genres.includes(genre)}
-                        onChange={() => handleGenreChange(genre)}
+                        checked={formData.genres.includes(genre.name)}
+                        onChange={() => handleGenreChange(genre.name)}
                       />
-                      {genre}
+                      {genre.name}
                     </label>
                   ))}
                 </div>
+                {genres.length === 0 && (
+                  <p style={{ color: '#888', fontSize: '13px', marginTop: '10px' }}>
+                    Chưa có thể loại. Vui lòng thêm thể loại trong phần Quản lý Thể loại.
+                  </p>
+                )}
               </div>
 
               <div className="form-row">
@@ -413,13 +457,29 @@ const AdminMovies = () => {
               </div>
 
               <div className="form-group">
-                <label>URL Poster</label>
+                <label>Poster phim</label>
+                <div className="file-input-wrapper">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    id="poster-upload"
+                    className="file-input"
+                  />
+                  <label htmlFor="poster-upload" className="file-input-label">
+                    <FaPlus /> {posterFile ? posterFile.name : 'Chọn ảnh từ máy tính'}
+                  </label>
+                </div>
+                <small style={{ color: '#888', display: 'block', marginTop: '5px' }}>
+                  Hoặc nhập URL ảnh:
+                </small>
                 <input
                   type="url"
                   name="poster"
                   value={formData.poster}
                   onChange={handleChange}
-                  placeholder="https://example.com/poster. jpg"
+                  placeholder="https://example.com/poster.jpg"
+                  style={{ marginTop: '8px' }}
                 />
               </div>
 
@@ -434,10 +494,10 @@ const AdminMovies = () => {
                 />
               </div>
 
-              {formData.poster && (
+              {posterPreview && (
                 <div className="poster-preview">
-                  <label>Xem trước poster: </label>
-                  <img src={formData.poster} alt="Preview" />
+                  <label>Xem trước poster:</label>
+                  <img src={posterPreview} alt="Preview" />
                 </div>
               )}
 

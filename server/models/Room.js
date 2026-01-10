@@ -49,4 +49,23 @@ const roomSchema = new mongoose.Schema(
   }
 );
 
+// Middleware để tự động tính totalSeats trước khi lưu
+roomSchema.pre('save', function(next) {
+  this.totalSeats = this.rows * this.seatsPerRow;
+  next();
+});
+
+// Middleware để tự động tính totalSeats khi update
+roomSchema.pre('findOneAndUpdate', function(next) {
+  const update = this.getUpdate();
+  if (update.rows || update.seatsPerRow) {
+    const rows = update.rows || this._update.rows;
+    const seatsPerRow = update.seatsPerRow || this._update.seatsPerRow;
+    if (rows && seatsPerRow) {
+      update.totalSeats = rows * seatsPerRow;
+    }
+  }
+  next();
+});
+
 module.exports = mongoose.model('Room', roomSchema);

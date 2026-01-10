@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const path = require('path');
 const connectDB = require('./config/db');
 const errorHandler = require('./middlewares/errorHandler');
 
@@ -16,6 +17,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve static files từ thư mục uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/movies', require('./routes/movieRoutes'));
@@ -23,6 +27,7 @@ app.use('/api/cinemas', require('./routes/cinemaRoutes'));
 app.use('/api/rooms', require('./routes/roomRoutes'));      
 app.use('/api/showtimes', require('./routes/showtimeRoutes'));
 app.use('/api/bookings', require('./routes/bookingRoutes'));
+app.use('/api/genres', require('./routes/genreRoutes'));
 
 // Home route
 app.get('/', (req, res) => {

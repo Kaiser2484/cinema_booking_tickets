@@ -21,6 +21,7 @@ import Cinemas from './pages/Cinemas/Cinemas';
 // Admin Pages
 import Dashboard from './pages/Admin/Dashboard';
 import AdminMovies from './pages/Admin/AdminMovies';
+import AdminGenres from './pages/Admin/AdminGenres';
 import AdminCinemas from './pages/Admin/AdminCinemas';
 import AdminRooms from './pages/Admin/AdminRooms';
 import AdminShowtimes from './pages/Admin/AdminShowtimes';
@@ -85,6 +86,7 @@ function AppContent() {
           >
             <Route index element={<Dashboard />} />
             <Route path="movies" element={<AdminMovies />} />
+            <Route path="genres" element={<AdminGenres />} />
             <Route path="cinemas" element={<AdminCinemas />} />
             <Route path="rooms" element={<AdminRooms />} />
             <Route path="showtimes" element={<AdminShowtimes />} />

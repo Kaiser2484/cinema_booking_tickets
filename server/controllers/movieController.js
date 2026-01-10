@@ -180,6 +180,33 @@ const deleteMovie = async (req, res) => {
   }
 };
 
+// @desc    Upload poster
+// @route   POST /api/movies/upload-poster
+// @access  Private/Admin
+const uploadPoster = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng chọn file ảnh'
+      });
+    }
+
+    const url = `${req.protocol}://${req.get('host')}/uploads/posters/${req.file.filename}`;
+
+    res.status(200).json({
+      success: true,
+      url: url,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 module. exports = {
   getMovies,
   getNowShowing,
@@ -187,5 +214,6 @@ module. exports = {
   getMovie,
   createMovie,
   updateMovie,
-  deleteMovie
+  deleteMovie,
+  uploadPoster
 };
