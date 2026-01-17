@@ -78,7 +78,9 @@ export const showtimeAPI = {
   getById: (id) => api.get(`/showtimes/${id}`),
   create: (data) => api.post('/showtimes', data),
   update: (id, data) => api.put(`/showtimes/${id}`, data),
-  delete: (id) => api.delete(`/showtimes/${id}`)
+  delete: (id) => api.delete(`/showtimes/${id}`),
+  autoSchedule: (data) => api.post('/showtimes/auto-schedule', data),
+  clearRange: (data) => api.delete('/showtimes/clear-range', { data })
 };
 
 // ============ BOOKING API ============
@@ -88,7 +90,9 @@ export const bookingAPI = {
   getById: (id) => api.get(`/bookings/${id}`),
   getAll: (params) => api.get('/bookings', { params }),
   cancel: (id) => api.put(`/bookings/${id}/cancel`),
-  confirm: (id) => api.put(`/bookings/${id}/confirm`)
+  confirm: (id) => api.put(`/bookings/${id}/confirm`),
+  verifyPayment: (id) => api.post(`/bookings/${id}/verify-payment`),
+  autoVerifyPayment: (id, transactionId) => api.post(`/bookings/${id}/auto-verify`, { transactionId })
 };
 
 // ============ GENRE API ============
@@ -98,6 +102,17 @@ export const genreAPI = {
   create: (data) => api.post('/genres', data),
   update: (id, data) => api.put(`/genres/${id}`, data),
   delete: (id) => api.delete(`/genres/${id}`)
+};
+
+// ============ PAYMENT CONFIG API ============
+export const paymentConfigAPI = {
+  getAll: () => api.get('/payment-config'),
+  getPrimary: () => api.get('/payment-config/primary'),
+  getById: (id) => api.get(`/payment-config/${id}`),
+  create: (data) => api.post('/payment-config', data),
+  update: (id, data) => api.put(`/payment-config/${id}`, data),
+  delete: (id) => api.delete(`/payment-config/${id}`),
+  setPrimary: (id) => api.put(`/payment-config/${id}/set-primary`)
 };
 
 export default api;

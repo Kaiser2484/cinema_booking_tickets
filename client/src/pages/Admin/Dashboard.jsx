@@ -18,6 +18,7 @@ const Dashboard = () => {
     totalRevenue: 0
   });
   const [recentBookings, setRecentBookings] = useState([]);
+  const [topMovies, setTopMovies] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,21 +34,33 @@ const Dashboard = () => {
       ]);
 
       const bookings = bookingsRes.data.data || [];
-      const totalRevenue = bookings.reduce((sum, b) => {
-        if (b.bookingStatus !== 'cancelled') {
-          return sum + (b.totalPrice || 0);
-        }
-        return sum;
+      const movies = moviesRes.data.data || [];
+      
+      // Tính tổng doanh thu từ totalRevenue của tất cả các phim
+      const totalRevenue = movies.reduce((sum, movie) => {
+        return sum + (movie.totalRevenue || 0);
+      }, 0);
+      
+      // Tính tổng vé đã bán từ totalBookings của tất cả các phim
+      const totalBookings = movies.reduce((sum, movie) => {
+        return sum + (movie.totalBookings || 0);
       }, 0);
 
       setStats({
         totalMovies: moviesRes.data.count || 0,
         totalCinemas: cinemasRes.data.count || 0,
-        totalBookings: bookings.length,
+        totalBookings,
         totalRevenue
       });
 
       setRecentBookings(bookings.slice(0, 5));
+
+      // Lấy top 5 phim có doanh thu cao nhất
+      const sortedMovies = movies
+        .filter(m => m.totalRevenue > 0)
+        .sort((a, b) => b.totalRevenue - a.totalRevenue)
+        .slice(0, 5);
+      setTopMovies(sortedMovies);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -205,6 +218,79 @@ const Dashboard = () => {
           </table>
         ) : (
           <p className="no-data">Chưa có đặt vé nào</p>
+        )}
+      </div>
+
+      {/* Top Movies by Revenue */}
+      <div className="recent-section">
+        <div className="section-header">
+          <h3>🏆 Top 5 Phim Có Doanh Thu Cao Nhất</h3>
+          <Link to="/admin/movies" className="view-all">Xem tất cả</Link>
+        </div>
+
+        {topMovies.length > 0 ? (
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Hạng</th>
+                <th>Poster</th>
+                <th>Tên phim</th>
+                <th>Tổng vé đã bán</th>
+                <th>Doanh thu</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topMovies.map((movie, index) => (
+                <tr key={movie._id}>
+                  <td>
+                    <span style={{ 
+                      fontSize: '20px', 
+                      fontWeight: 'bold',
+                      color: index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : index === 2 ? '#CD7F32' : '#888'
+                    }}>
+                      #{index + 1}
+                    </span>
+                  </td>
+                  <td>
+                    <img 
+                      src={movie.poster || 'https://via.placeholder.com/50x75?text=No+Image'} 
+                      alt={movie.title}
+                      className="table-poster"
+                      style={{ width: '40px', height: '60px', objectFit: 'cover', borderRadius: '5px' }}
+                    />
+                  </td>
+                  <td><strong>{movie.title}</strong></td>
+                  <td>
+                    <strong style={{ color: '#4facfe' }}>
+                      {movie.totalBookings?.toLocaleString('vi-VN')} vé
+                    </strong>
+                  </td>
+                  <td className="price">
+                    <strong style={{ color: '#43e97b', fontSize: '16px' }}>
+                      {formatPrice(movie.totalRevenue)}
+                    </strong>
+                  </td>
+                  <td>
+                    <span 
+                      className="status-badge"
+                      style={{ 
+                        background: movie.status === 'now_showing' 
+                          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                          : movie.status === 'coming_soon'
+                          ? 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+                          : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                      }}
+                    >
+                      {movie.status === 'now_showing' ? 'Đang chiếu' : movie.status === 'coming_soon' ? 'Sắp chiếu' : 'Đã kết thúc'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p className="no-data">Chưa có dữ liệu doanh thu</p>
         )}
       </div>
     </div>

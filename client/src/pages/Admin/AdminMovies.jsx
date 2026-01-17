@@ -258,6 +258,8 @@ const AdminMovies = () => {
               <th>Tên phim</th>
               <th>Thể loại</th>
               <th>Thời lượng</th>
+              <th>Tổng vé</th>
+              <th>Doanh thu</th>
               <th>Ngày chiếu</th>
               <th>Trạng thái</th>
               <th>Thao tác</th>
@@ -280,6 +282,19 @@ const AdminMovies = () => {
                 </td>
                 <td>{movie.genres?.slice(0, 2).join(', ')}</td>
                 <td>{movie.duration} phút</td>
+                <td>
+                  <strong style={{ color: '#4facfe' }}>
+                    {movie.totalBookings?.toLocaleString('vi-VN') || 0}
+                  </strong>
+                </td>
+                <td>
+                  <strong style={{ color: '#43e97b' }}>
+                    {new Intl.NumberFormat('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND'
+                    }).format(movie.totalRevenue || 0)}
+                  </strong>
+                </td>
                 <td>{formatDate(movie.releaseDate)}</td>
                 <td>
                   <span 

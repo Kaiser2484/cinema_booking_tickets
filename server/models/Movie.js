@@ -80,6 +80,16 @@ const movieSchema = new mongoose. Schema(
     isFeatured: {
       type: Boolean,
       default: false
+    },
+    totalBookings: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    totalRevenue: {
+      type: Number,
+      default: 0,
+      min: 0
     }
   },
   {

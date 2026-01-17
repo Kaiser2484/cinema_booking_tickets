@@ -12,7 +12,9 @@ import {
   FaTimes,
   FaSignOutAlt,
   FaArrowLeft,
-  FaTheaterMasks
+  FaTheaterMasks,
+  FaCreditCard,
+  FaMagic
 } from 'react-icons/fa';
 import './AdminLayout.css';
 
@@ -29,7 +31,9 @@ const AdminLayout = () => {
     { path: '/admin/cinemas', icon: <FaBuilding />, label: 'Quản lý Rạp' },
     { path: '/admin/rooms', icon: <FaDoorOpen />, label: 'Quản lý Phòng' },
     { path: '/admin/showtimes', icon:  <FaCalendarAlt />, label: 'Lịch Chiếu' },
+    { path: '/admin/auto-schedule', icon: <FaMagic />, label: 'Tự Động Sắp Xếp' },
     { path: '/admin/bookings', icon: <FaTicketAlt />, label: 'Đặt Vé' },
+    { path: '/admin/payment-config', icon: <FaCreditCard />, label: 'Thanh Toán' },
   ];
 
   const isActive = (path, exact = false) => {

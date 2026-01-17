@@ -9,17 +9,51 @@ const BookingSuccess = () => {
   const { id } = useParams();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const fetchBooking = useCallback(async () => {
     try {
       const response = await bookingAPI.getById(id);
-      setBooking(response.data.data);
+      const bookingData = response.data.data;
+      
+      console.log('=== BOOKING SUCCESS DEBUG ===');
+      console.log('Full Booking:', bookingData);
+      console.log('Cinema:', bookingData?.showtime?.cinema?.name);
+      console.log('Address:', bookingData?.showtime?.cinema?.address);
+      console.log('Room:', bookingData?.showtime?.room?.name);
+      console.log('Seats:', bookingData?.seats?.map(s => s.seatNumber).join(', '));
+      console.log('Total Seats:', bookingData?.totalSeats);
+      
+      setBooking(bookingData);
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
     } catch (error) {
       console.error('Error fetching booking:', error);
     } finally {
       setLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    fetchBooking();
+  }, [fetchBooking]);
+
+  // Create confetti elements
+  const createConfetti = () => {
+    const confettiElements = [];
+    const colors = ['#e94560', '#f39c12', '#27ae60', '#3498db', '#9b59b6', '#f1c40f'];
+    
+    for (let i = 0; i < 50; i++) {
+      const style = {
+        left: `${Math.random() * 100}%`,
+        animationDelay: `${Math.random() * 3}s`,
+        backgroundColor: colors[Math.floor(Math.random() * colors.length)],
+        animationDuration: `${2 + Math.random() * 3}s`
+      };
+      confettiElements.push(<div key={i} className="confetti" style={style}></div>);
+    }
+    return confettiElements;
+  };
 
   useEffect(() => {
     fetchBooking();
@@ -58,20 +92,22 @@ const BookingSuccess = () => {
 
   return (
     <div className="booking-success-page">
-      <div className="success-container">
-        <div className="success-icon">
+      {showConfetti && <div className="confetti-container">{createConfetti()}</div>}
+      
+      <div className="success-container animate-in">
+        <div className="success-icon pulse-animation">
           <FaCheckCircle />
         </div>
 
-        <h1>Đặt Vé Thành Công! </h1>
-        <p className="success-message">
-          Cảm ơn bạn đã đặt vé tại CineBook. Vui lòng lưu lại thông tin bên dưới. 
+        <h1 className="fade-in-up">Đặt Vé Thành Công!</h1>
+        <p className="success-message fade-in-up delay-1">
+          Cảm ơn bạn đã đặt vé tại CineBook. Vui lòng lưu lại thông tin bên dưới.
         </p>
 
-        <div className="booking-ticket">
+        <div className="booking-ticket fade-in-up delay-2">
           <div className="ticket-header">
             <FaTicketAlt />
-            <span>Mã đặt vé:  <strong>{booking.bookingCode}</strong></span>
+            <span>Mã đặt vé: <strong>{booking.bookingCode}</strong></span>
           </div>
 
           <div className="ticket-content">
@@ -126,7 +162,7 @@ const BookingSuccess = () => {
           </div>
         </div>
 
-        <div className="success-actions">
+        <div className="success-actions fade-in-up delay-3">
           <Link to="/profile" className="btn-my-bookings">
             <FaTicketAlt /> Xem Lịch Sử Đặt Vé
           </Link>

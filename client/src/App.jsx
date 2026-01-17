@@ -25,7 +25,9 @@ import AdminGenres from './pages/Admin/AdminGenres';
 import AdminCinemas from './pages/Admin/AdminCinemas';
 import AdminRooms from './pages/Admin/AdminRooms';
 import AdminShowtimes from './pages/Admin/AdminShowtimes';
+import AdminAutoSchedule from './pages/Admin/AdminAutoSchedule';
 import AdminBookings from './pages/Admin/AdminBookings';
+import AdminPaymentConfig from './pages/Admin/AdminPaymentConfig';
 
 import './App.css';
 
@@ -90,7 +92,9 @@ function AppContent() {
             <Route path="cinemas" element={<AdminCinemas />} />
             <Route path="rooms" element={<AdminRooms />} />
             <Route path="showtimes" element={<AdminShowtimes />} />
+            <Route path="auto-schedule" element={<AdminAutoSchedule />} />
             <Route path="bookings" element={<AdminBookings />} />
+            <Route path="payment-config" element={<AdminPaymentConfig />} />
           </Route>
         </Routes>
       </div>

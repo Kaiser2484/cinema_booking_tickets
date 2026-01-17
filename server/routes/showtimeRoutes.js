@@ -8,6 +8,10 @@ const {
   updateShowtime,
   deleteShowtime
 } = require('../controllers/showtimeController');
+const {
+  autoScheduleShowtimes,
+  clearShowtimesInRange
+} = require('../controllers/autoScheduleController');
 const { protect, admin } = require('../middlewares/auth');
 
 // Public routes
@@ -19,5 +23,9 @@ router.get('/:id', getShowtime);
 router.post('/', protect, admin, createShowtime);
 router.put('/:id', protect, admin, updateShowtime);
 router.delete('/:id', protect, admin, deleteShowtime);
+
+// Auto schedule routes
+router.post('/auto-schedule', protect, admin, autoScheduleShowtimes);
+router.delete('/clear-range', protect, admin, clearShowtimesInRange);
 
 module.exports = router;

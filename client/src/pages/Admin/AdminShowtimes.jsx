@@ -8,9 +8,12 @@ import {
   FaTimes,
   FaSave,
   FaCalendarAlt,
-  FaFilter
+  FaFilter,
+  FaChevronLeft,
+  FaChevronRight
 } from 'react-icons/fa';
 import './Admin.css';
+import './AdminShowtimes.css';
 
 const AdminShowtimes = () => {
   const [showtimes, setShowtimes] = useState([]);
@@ -22,8 +25,10 @@ const AdminShowtimes = () => {
   const [editingShowtime, setEditingShowtime] = useState(null);
   
   // Filters
-  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
+  const [viewMode, setViewMode] = useState('day'); // 'day', 'week', 'month'
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [filterCinema, setFilterCinema] = useState('');
+  const [filterMovie, setFilterMovie] = useState('');
 
   const [formData, setFormData] = useState({
     movie: '',
@@ -43,7 +48,7 @@ const AdminShowtimes = () => {
   useEffect(() => {
     fetchShowtimes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterDate, filterCinema]);
+  }, [currentDate, filterCinema, filterMovie, viewMode]);
 
   useEffect(() => {
     if (formData.cinema) {
@@ -83,14 +88,112 @@ const AdminShowtimes = () => {
 
   const fetchShowtimes = async () => {
     try {
-      const params = { date: filterDate };
+      const params = {};
+      
+      // Get date range based on view mode
+      const dateRange = getDateRange();
+      params.startDate = dateRange.start;
+      params.endDate = dateRange.end;
+      
       if (filterCinema) params.cinema = filterCinema;
+      if (filterMovie) params.movie = filterMovie;
       
       const response = await showtimeAPI.getAll(params);
       setShowtimes(response.data.data);
     } catch (error) {
       console.error('Error fetching showtimes:', error);
     }
+  };
+
+  const getDateRange = () => {
+    const date = new Date(currentDate);
+    date.setHours(0, 0, 0, 0);
+    let start, end;
+
+    if (viewMode === 'day') {
+      // Chỉ hiển thị ngày được chọn
+      start = new Date(date);
+      end = new Date(date);
+      end.setHours(23, 59, 59, 999);
+    } else if (viewMode === 'week') {
+      // Hiển thị cả tuần chứa ngày được chọn (Thứ 2 -> Chủ nhật)
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Lấy thứ 2
+      
+      start = new Date(date.getFullYear(), date.getMonth(), diff);
+      start.setHours(0, 0, 0, 0);
+      
+      end = new Date(start);
+      end.setDate(end.getDate() + 6); // Chủ nhật
+      end.setHours(23, 59, 59, 999);
+    } else if (viewMode === 'month') {
+      // Hiển thị cả tháng chứa ngày được chọn
+      start = new Date(date.getFullYear(), date.getMonth(), 1);
+      start.setHours(0, 0, 0, 0);
+      
+      end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+      end.setHours(23, 59, 59, 999);
+    }
+
+    return {
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0]
+    };
+  };
+
+  const navigateDate = (direction) => {
+    const date = new Date(currentDate);
+    
+    if (viewMode === 'day') {
+      date.setDate(date.getDate() + direction);
+    } else if (viewMode === 'week') {
+      date.setDate(date.getDate() + (direction * 7));
+    } else if (viewMode === 'month') {
+      date.setMonth(date.getMonth() + direction);
+    }
+    
+    setCurrentDate(date);
+  };
+
+  const getDisplayDate = () => {
+    const date = new Date(currentDate);
+    
+    if (viewMode === 'day') {
+      return date.toLocaleDateString('vi-VN', { 
+        weekday: 'long',
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric' 
+      });
+    } else if (viewMode === 'week') {
+      const dateRange = getDateRange();
+      const start = new Date(dateRange.start);
+      const end = new Date(dateRange.end);
+      return `Tuần: ${start.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${end.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
+    } else {
+      return `Tháng ${date.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}`;
+    }
+  };
+
+  const groupShowtimesByDate = () => {
+    const grouped = {};
+    
+    showtimes.forEach(showtime => {
+      const date = new Date(showtime.startTime).toISOString().split('T')[0];
+      if (!grouped[date]) {
+        grouped[date] = [];
+      }
+      grouped[date].push(showtime);
+    });
+
+    // Sort showtimes within each date
+    Object.keys(grouped).forEach(date => {
+      grouped[date].sort((a, b) => 
+        new Date(a.startTime) - new Date(b.startTime)
+      );
+    });
+
+    return grouped;
   };
 
   const fetchRooms = async (cinemaId) => {
@@ -110,6 +213,14 @@ const AdminShowtimes = () => {
     }));
   };
 
+  const handleDatePickerChange = (e) => {
+    const selectedDate = new Date(e.target.value);
+    // Đảm bảo ngày được chọn có giờ hiện tại để tránh lỗi timezone
+    const today = new Date();
+    selectedDate.setHours(today.getHours(), today.getMinutes(), 0, 0);
+    setCurrentDate(selectedDate);
+  };
+
   const resetForm = () => {
     setFormData({
       movie:  '',
@@ -123,6 +234,14 @@ const AdminShowtimes = () => {
     });
     setEditingShowtime(null);
     setRooms([]);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit'
+    });
   };
 
   const openAddModal = () => {
@@ -218,27 +337,73 @@ const AdminShowtimes = () => {
     return <div className="loading">Đang tải...</div>;
   }
 
+  const groupedShowtimes = groupShowtimesByDate();
+
   return (
-    <div className="admin-page">
+    <div className="admin-showtimes">
       <div className="page-header">
-        <h2><FaCalendarAlt /> Quản Lý Lịch Chiếu</h2>
+        <h2><FaCalendarAlt /> Quản lý lịch chiếu</h2>
         <button className="btn-add" onClick={openAddModal}>
-          <FaPlus /> Thêm Lịch Chiếu
+          <FaPlus /> Thêm lịch chiếu
         </button>
+      </div>
+
+      {/* View Mode & Date Navigation */}
+      <div className="calendar-controls">
+        <div className="view-mode-selector">
+          <button 
+            className={`mode-btn ${viewMode === 'day' ? 'active' : ''}`}
+            onClick={() => setViewMode('day')}
+          >
+            Ngày
+          </button>
+          <button 
+            className={`mode-btn ${viewMode === 'week' ? 'active' : ''}`}
+            onClick={() => setViewMode('week')}
+          >
+            Tuần
+          </button>
+          <button 
+            className={`mode-btn ${viewMode === 'month' ? 'active' : ''}`}
+            onClick={() => setViewMode('month')}
+          >
+            Tháng
+          </button>
+        </div>
+
+        <div className="date-navigation">
+          <button className="nav-btn" onClick={() => navigateDate(-1)} title="Trước">
+            <FaChevronLeft />
+          </button>
+          
+          <input
+            type="date"
+            className="date-picker-input"
+            value={currentDate.toISOString().split('T')[0]}
+            onChange={handleDatePickerChange}
+            title={viewMode === 'day' ? 'Chọn ngày' : viewMode === 'week' ? 'Chọn ngày để xem tuần đó' : 'Chọn ngày để xem tháng đó'}
+          />
+          
+          <div className="current-date-display">
+            {getDisplayDate()}
+          </div>
+          
+          <button className="nav-btn" onClick={() => navigateDate(1)} title="Sau">
+            <FaChevronRight />
+          </button>
+          <button 
+            className="today-btn" 
+            onClick={() => setCurrentDate(new Date())}
+          >
+            Hôm nay
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
       <div className="filter-bar">
         <div className="filter-group">
-          <label><FaFilter /> Ngày: </label>
-          <input
-            type="date"
-            value={filterDate}
-            onChange={(e) => setFilterDate(e.target.value)}
-          />
-        </div>
-        <div className="filter-group">
-          <label>Rạp:</label>
+          <label><FaFilter /> Rạp:</label>
           <select 
             value={filterCinema} 
             onChange={(e) => setFilterCinema(e.target.value)}
@@ -251,86 +416,105 @@ const AdminShowtimes = () => {
             ))}
           </select>
         </div>
+        
+        <div className="filter-group">
+          <label><FaFilter /> Phim:</label>
+          <select 
+            value={filterMovie} 
+            onChange={(e) => setFilterMovie(e.target.value)}
+          >
+            <option value="">Tất cả phim</option>
+            {movies.map(movie => (
+              <option key={movie._id} value={movie._id}>
+                {movie.title}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Showtimes Table */}
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Phim</th>
-              <th>Rạp</th>
-              <th>Phòng</th>
-              <th>Giờ chiếu</th>
-              <th>Giá vé</th>
-              <th>Đã đặt</th>
-              <th>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {showtimes.map(showtime => (
-              <tr key={showtime._id}>
-                <td>
-                  <div className="movie-cell">
-                    <img 
-                      src={showtime.movie?.poster || 'https://via.placeholder.com/40x60'} 
-                      alt={showtime.movie?.title}
-                      className="mini-poster"
-                    />
-                    <div>
-                      <strong>{showtime.movie?.title || 'N/A'}</strong>
-                      <br />
-                      <small>{showtime.movie?.duration} phút</small>
+      {/* Calendar View */}
+      <div className="showtime-calendar">
+        {Object.keys(groupedShowtimes).length > 0 ? (
+          Object.entries(groupedShowtimes).map(([date, dateShowtimes]) => (
+            <div key={date} className="calendar-day-section">
+              <div className="day-header">
+                <h3>{formatDate(date)}</h3>
+                <span className="showtime-count">{dateShowtimes.length} suất chiếu</span>
+              </div>
+              
+              <div className="showtimes-grid">
+                {dateShowtimes.map(showtime => (
+                  <div key={showtime._id} className="showtime-card">
+                    <div className="showtime-time">
+                      <span className="time-start">{formatTime(showtime.startTime)}</span>
+                      <span className="time-separator">→</span>
+                      <span className="time-end">{formatTime(showtime.endTime)}</span>
+                    </div>
+                    
+                    <div className="showtime-movie">
+                      <img 
+                        src={showtime.movie?.poster || 'https://via.placeholder.com/60x90'} 
+                        alt={showtime.movie?.title}
+                        className="showtime-poster"
+                      />
+                      <div className="movie-info">
+                        <h4>{showtime.movie?.title || 'N/A'}</h4>
+                        <span className="movie-duration">{showtime.movie?.duration} phút</span>
+                      </div>
+                    </div>
+
+                    <div className="showtime-details">
+                      <div className="detail-item">
+                        <span className="label">Rạp:</span>
+                        <span className="value">{showtime.cinema?.name}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Phòng:</span>
+                        <span className={`room-badge type-${showtime.room?.type?.toLowerCase()}`}>
+                          {showtime.room?.name} ({showtime.room?.type})
+                        </span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Giá vé:</span>
+                        <div className="price-list">
+                          <span>Thường: {formatPrice(showtime.price?.standard)}</span>
+                          <span>VIP: {formatPrice(showtime.price?.vip)}</span>
+                        </div>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Đã đặt:</span>
+                        <span className="booked-info">
+                          {showtime.bookedSeats?.length || 0}/{showtime.room?.totalSeats || 0}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="showtime-actions">
+                      <button 
+                        className="btn-edit-small" 
+                        onClick={() => openEditModal(showtime)}
+                        title="Sửa"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button 
+                        className="btn-delete-small" 
+                        onClick={() => handleDelete(showtime._id)}
+                        title="Xóa"
+                      >
+                        <FaTrash />
+                      </button>
                     </div>
                   </div>
-                </td>
-                <td>{showtime.cinema?.name || 'N/A'}</td>
-                <td>
-                  <span className={`room-type type-${showtime.room?.type?.toLowerCase()}`}>
-                    {showtime.room?.name} ({showtime.room?.type})
-                  </span>
-                </td>
-                <td>
-                  <strong>{formatTime(showtime.startTime)}</strong>
-                  <span className="time-separator"> - </span>
-                  {formatTime(showtime.endTime)}
-                </td>
-                <td>
-                  <small>
-                    Thường:  {formatPrice(showtime.price?.standard)}<br />
-                    VIP: {formatPrice(showtime.price?.vip)}
-                  </small>
-                </td>
-                <td>
-                  <span className="booked-count">
-                    {showtime.bookedSeats?.length || 0}/{showtime.room?.totalSeats || 0}
-                  </span>
-                </td>
-                <td>
-                  <div className="action-buttons">
-                    <button 
-                      className="btn-edit" 
-                      onClick={() => openEditModal(showtime)}
-                      title="Sửa"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button 
-                      className="btn-delete" 
-                      onClick={() => handleDelete(showtime._id)}
-                      title="Xóa"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {showtimes.length === 0 && (
-          <p className="no-data">Không có lịch chiếu nào cho ngày này</p>
+                ))}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="no-data">
+            Không có lịch chiếu nào trong khoảng thời gian này
+          </div>
         )}
       </div>
 

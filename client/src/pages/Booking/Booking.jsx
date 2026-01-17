@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { movieAPI, showtimeAPI, bookingAPI } from '../../services/api';
+import { movieAPI, showtimeAPI, bookingAPI, cinemaAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import Loading from '../../components/Loading/Loading';
+import PaymentModal from '../../components/PaymentModal/PaymentModal';
 import { toast } from 'react-toastify';
 import { FaTicketAlt, FaClock } from 'react-icons/fa';
 import './Booking.css';
@@ -17,11 +18,14 @@ const Booking = () => {
   const [movie, setMovie] = useState(null);
   const [showtime, setShowtime] = useState(null);
   const [showtimes, setShowtimes] = useState([]);
+  const [cinemas, setCinemas] = useState([]);
+  const [selectedCinema, setSelectedCinema] = useState('');
   const [selectedShowtime, setSelectedShowtime] = useState(showtimeId || '');
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const fetchMovie = useCallback(async () => {
     try {
@@ -34,6 +38,20 @@ const Booking = () => {
       setLoading(false);
     }
   }, [movieId]);
+
+  const fetchCinemas = useCallback(async () => {
+    try {
+      const response = await cinemaAPI.getAll();
+      const cinemaList = response.data.data || [];
+      setCinemas(cinemaList);
+      // Tự động chọn rạp đầu tiên
+      if (cinemaList.length > 0 && !selectedCinema) {
+        setSelectedCinema(cinemaList[0]._id);
+      }
+    } catch (error) {
+      console.error('Error fetching cinemas:', error);
+    }
+  }, [selectedCinema]);
 
   const fetchShowtimes = useCallback(async () => {
     try {
@@ -56,7 +74,8 @@ const Booking = () => {
 
   useEffect(() => {
     fetchMovie();
-  }, [fetchMovie]);
+    fetchCinemas();
+  }, [fetchMovie, fetchCinemas]);
 
   useEffect(() => {
     if (movieId) {
@@ -169,7 +188,7 @@ const Booking = () => {
     });
   };
 
-  // Xử lý đặt vé
+  // Xử lý đặt vé - Mở modal thanh toán
   const handleBooking = async () => {
     if (!isAuthenticated) {
       toast.error('Vui lòng đăng nhập để đặt vé!');
@@ -182,19 +201,35 @@ const Booking = () => {
       return;
     }
 
+    // Mở modal thanh toán thay vì thanh toán trực tiếp
+    setShowPaymentModal(true);
+  };
+
+  // Xử lý khi thanh toán hoàn tất
+  const handlePaymentComplete = async (paymentData) => {
     setBooking(true);
+    setShowPaymentModal(false);
 
     try {
       const response = await bookingAPI.create({
-        showtime:  selectedShowtime,
+        showtime: selectedShowtime,
         seats: selectedSeats.map(s => ({ seatNumber: s.seatNumber })),
-        paymentMethod: 'cash'
+        paymentMethod: paymentData.method,
+        transactionId: paymentData.transactionId,
+        paymentStatus: paymentData.status === 'completed' ? 'completed' : 'pending'
       });
 
+      console.log('Create Booking Response:', response.data.data);
       toast.success('Đặt vé thành công!');
+      
+      // Đợi 500ms để backend lưu xong
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       navigate(`/booking/success/${response.data.data._id}`);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Đặt vé thất bại! ');
+      toast.error(error.response?.data?.message || 'Đặt vé thất bại!');
+      // Nếu lỗi, cho phép user thử lại
+      setShowPaymentModal(true);
     } finally {
       setBooking(false);
     }
@@ -226,6 +261,27 @@ const Booking = () => {
           </div>
         </div>
 
+        {/* Cinema Selection */}
+        <div className="booking-section">
+          <h2>🎭 Chọn Rạp Chiếu</h2>
+          <div className="cinema-selector">
+            {cinemas.map(cinema => (
+              <button
+                key={cinema._id}
+                className={`cinema-btn ${selectedCinema === cinema._id ? 'active' : ''}`}
+                onClick={() => {
+                  setSelectedCinema(cinema._id);
+                  setSelectedShowtime('');
+                  setShowtime(null);
+                }}
+              >
+                <span className="cinema-name">{cinema.name}</span>
+                <span className="cinema-address">{cinema.address}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Date Selection */}
         <div className="booking-section">
           <h2>📅 Chọn Ngày</h2>
@@ -249,9 +305,9 @@ const Booking = () => {
         {/* Showtime Selection */}
         <div className="booking-section">
           <h2>🕐 Chọn Suất Chiếu</h2>
-          {showtimes.length > 0 ? (
+          {showtimes.filter(st => !selectedCinema || st.cinema?._id === selectedCinema).length > 0 ? (
             <div className="showtime-grid">
-              {showtimes.map(st => (
+              {showtimes.filter(st => !selectedCinema || st.cinema?._id === selectedCinema).map(st => (
                 <button
                   key={st._id}
                   className={`showtime-btn ${selectedShowtime === st._id ? 'active' : ''}`}
@@ -369,6 +425,19 @@ const Booking = () => {
             </button>
           </div>
         )}
+
+        {/* Payment Modal */}
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          bookingData={{
+            movie: movie,
+            showtime: showtime,
+            seats: selectedSeats,
+            totalPrice: calculatePrice()
+          }}
+          onPaymentComplete={handlePaymentComplete}
+        />
       </div>
     </div>
   );

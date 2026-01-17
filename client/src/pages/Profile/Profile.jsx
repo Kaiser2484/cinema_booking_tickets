@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { bookingAPI } from '../../services/api';
 import Loading from '../../components/Loading/Loading';
+import TicketDetail from '../../components/TicketDetail/TicketDetail';
 import { toast } from 'react-toastify';
 import { 
   FaUser, 
@@ -13,7 +14,8 @@ import {
   FaSave,
   FaTimes,
   FaCalendar,
-  FaMapMarkerAlt
+  FaMapMarkerAlt,
+  FaEye
 } from 'react-icons/fa';
 import './Profile.css';
 
@@ -25,6 +27,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('bookings');
   const [editing, setEditing] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: ''
@@ -206,14 +209,24 @@ const Profile = () => {
                           {getStatusText(booking.bookingStatus)}
                         </span>
 
-                        {booking.bookingStatus === 'pending' && (
+                        <div className="booking-actions">
                           <button
-                            className="btn-cancel"
-                            onClick={() => handleCancelBooking(booking._id)}
+                            className="btn-view-detail"
+                            onClick={() => setSelectedBooking(booking)}
+                            title="Xem chi tiết vé"
                           >
-                            <FaTimes /> Hủy vé
+                            <FaEye /> Chi tiết
                           </button>
-                        )}
+                          
+                          {booking.bookingStatus === 'pending' && (
+                            <button
+                              className="btn-cancel"
+                              onClick={() => handleCancelBooking(booking._id)}
+                            >
+                              <FaTimes /> Hủy vé
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -306,6 +319,14 @@ const Profile = () => {
           )}
         </div>
       </div>
+
+      {/* Ticket Detail Modal */}
+      {selectedBooking && (
+        <TicketDetail 
+          booking={selectedBooking} 
+          onClose={() => setSelectedBooking(null)}
+        />
+      )}
     </div>
   );
 };

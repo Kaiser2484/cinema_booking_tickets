@@ -54,6 +54,52 @@
   margin-bottom: 20px;
 }
 
+/* Cinema Selector */
+.cinema-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.cinema-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 15px;
+  background: #16213e;
+  border: 2px solid #16213e;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: left;
+}
+
+.cinema-btn:hover {
+  border-color: #e94560;
+  transform: translateY(-2px);
+}
+
+.cinema-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+.cinema-name {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cinema-address {
+  color: #888;
+  font-size: 13px;
+}
+
+.cinema-btn.active .cinema-address {
+  color: #e0e0e0;
+}
+
 /* Date Selector */
 .date-selector {
   display: flex;

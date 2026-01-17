@@ -28,6 +28,7 @@ app.use('/api/rooms', require('./routes/roomRoutes'));
 app.use('/api/showtimes', require('./routes/showtimeRoutes'));
 app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/genres', require('./routes/genreRoutes'));
+app.use('/api/payment-config', require('./routes/paymentConfigRoutes'));
 
 // Home route
 app.get('/', (req, res) => {
