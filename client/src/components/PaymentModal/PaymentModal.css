@@ -108,7 +108,7 @@
 /* Payment Methods */
 .payment-methods {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   margin-bottom: 25px;
 }
@@ -388,75 +388,6 @@
   font-size: 16px;
 }
 
-/* Cash Payment */
-.cash-payment {
-  text-align: center;
-}
-
-.cash-icon {
-  font-size: 60px;
-  margin-bottom: 20px;
-}
-
-.cash-payment h3 {
-  color: #fff;
-  font-size: 22px;
-  margin-bottom: 20px;
-}
-
-.cash-info {
-  text-align: left;
-}
-
-.cash-info p {
-  color: #ccc;
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-
-.payment-amount {
-  background: rgba(233, 69, 96, 0.1);
-  padding: 20px;
-  border-radius: 12px;
-  margin: 20px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.payment-amount span {
-  color: #ccc;
-  font-size: 15px;
-}
-
-.payment-amount strong {
-  color: #e94560;
-  font-size: 24px;
-}
-
-.cash-instructions {
-  margin: 20px 0;
-}
-
-.cash-instructions h4 {
-  color: #fff;
-  font-size: 16px;
-  margin-bottom: 12px;
-}
-
-.cash-instructions ol {
-  color: #ccc;
-  padding-left: 20px;
-}
-
-.cash-instructions li {
-  margin-bottom: 8px;
-  line-height: 1.5;
-}
-
-.cash-instructions strong {
-  color: #e94560;
-}
 
 /* Confirm Button */
 .btn-confirm-payment {
@@ -573,7 +504,7 @@
   }
 
   .payment-methods {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
 

@@ -10,7 +10,9 @@ import {
   FaCalendarAlt,
   FaFilter,
   FaChevronLeft,
-  FaChevronRight
+  FaChevronRight,
+  FaFilm,
+  FaBuilding
 } from 'react-icons/fa';
 import './Admin.css';
 import './AdminShowtimes.css';
@@ -25,7 +27,6 @@ const AdminShowtimes = () => {
   const [editingShowtime, setEditingShowtime] = useState(null);
   
   // Filters
-  const [viewMode, setViewMode] = useState('day'); // 'day', 'week', 'month'
   const [currentDate, setCurrentDate] = useState(new Date());
   const [filterCinema, setFilterCinema] = useState('');
   const [filterMovie, setFilterMovie] = useState('');
@@ -46,9 +47,12 @@ const AdminShowtimes = () => {
   }, []);
 
   useEffect(() => {
-    fetchShowtimes();
+    if (showtimes || currentDate) {
+      // Force re-fetch when currentDate changes
+      fetchShowtimes();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDate, filterCinema, filterMovie, viewMode]);
+  }, [currentDate.getTime(), filterCinema, filterMovie]);
 
   useEffect(() => {
     if (formData.cinema) {
@@ -95,10 +99,19 @@ const AdminShowtimes = () => {
       params.startDate = dateRange.start;
       params.endDate = dateRange.end;
       
+      console.log('🔍 Fetching showtimes with params:', {
+        startDate: params.startDate,
+        endDate: params.endDate,
+        cinema: filterCinema,
+        movie: filterMovie,
+        currentDate: currentDate.toISOString()
+      });
+      
       if (filterCinema) params.cinema = filterCinema;
       if (filterMovie) params.movie = filterMovie;
       
       const response = await showtimeAPI.getAll(params);
+      console.log('✅ Received showtimes:', response.data.data.length);
       setShowtimes(response.data.data);
     } catch (error) {
       console.error('Error fetching showtimes:', error);
@@ -107,79 +120,36 @@ const AdminShowtimes = () => {
 
   const getDateRange = () => {
     const date = new Date(currentDate);
-    date.setHours(0, 0, 0, 0);
-    let start, end;
-
-    if (viewMode === 'day') {
-      // Chỉ hiển thị ngày được chọn
-      start = new Date(date);
-      end = new Date(date);
-      end.setHours(23, 59, 59, 999);
-    } else if (viewMode === 'week') {
-      // Hiển thị cả tuần chứa ngày được chọn (Thứ 2 -> Chủ nhật)
-      const day = date.getDay();
-      const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Lấy thứ 2
-      
-      start = new Date(date.getFullYear(), date.getMonth(), diff);
-      start.setHours(0, 0, 0, 0);
-      
-      end = new Date(start);
-      end.setDate(end.getDate() + 6); // Chủ nhật
-      end.setHours(23, 59, 59, 999);
-    } else if (viewMode === 'month') {
-      // Hiển thị cả tháng chứa ngày được chọn
-      start = new Date(date.getFullYear(), date.getMonth(), 1);
-      start.setHours(0, 0, 0, 0);
-      
-      end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-      end.setHours(23, 59, 59, 999);
-    }
+    
+    // Lấy ngày theo local timezone, không bị ảnh hưởng bởi GMT
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    const dateString = `${year}-${month}-${day}`;
+    
+    console.log('📅 getDateRange - currentDate:', currentDate);
+    console.log('📅 getDateRange - dateString:', dateString);
 
     return {
-      start: start.toISOString().split('T')[0],
-      end: end.toISOString().split('T')[0]
+      start: dateString,
+      end: dateString
     };
-  };
-
-  const navigateDate = (direction) => {
-    const date = new Date(currentDate);
-    
-    if (viewMode === 'day') {
-      date.setDate(date.getDate() + direction);
-    } else if (viewMode === 'week') {
-      date.setDate(date.getDate() + (direction * 7));
-    } else if (viewMode === 'month') {
-      date.setMonth(date.getMonth() + direction);
-    }
-    
-    setCurrentDate(date);
-  };
-
-  const getDisplayDate = () => {
-    const date = new Date(currentDate);
-    
-    if (viewMode === 'day') {
-      return date.toLocaleDateString('vi-VN', { 
-        weekday: 'long',
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric' 
-      });
-    } else if (viewMode === 'week') {
-      const dateRange = getDateRange();
-      const start = new Date(dateRange.start);
-      const end = new Date(dateRange.end);
-      return `Tuần: ${start.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${end.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
-    } else {
-      return `Tháng ${date.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}`;
-    }
   };
 
   const groupShowtimesByDate = () => {
     const grouped = {};
+    const now = new Date(); // Thời điểm hiện tại
     
     showtimes.forEach(showtime => {
-      const date = new Date(showtime.startTime).toISOString().split('T')[0];
+      const showtimeStart = new Date(showtime.startTime);
+      
+      // Bỏ qua các suất chiếu đã qua
+      if (showtimeStart < now) {
+        return; // Skip suất chiếu này
+      }
+      
+      const date = showtimeStart.toISOString().split('T')[0];
       if (!grouped[date]) {
         grouped[date] = [];
       }
@@ -214,10 +184,16 @@ const AdminShowtimes = () => {
   };
 
   const handleDatePickerChange = (e) => {
-    const selectedDate = new Date(e.target.value);
-    // Đảm bảo ngày được chọn có giờ hiện tại để tránh lỗi timezone
-    const today = new Date();
-    selectedDate.setHours(today.getHours(), today.getMinutes(), 0, 0);
+    const dateValue = e.target.value; // Format: YYYY-MM-DD
+    console.log('📅 Date picker changed:', dateValue);
+    
+    // Tạo date object từ string với timezone local
+    const [year, month, day] = dateValue.split('-').map(Number);
+    const selectedDate = new Date(year, month - 1, day, 12, 0, 0, 0); // Set giờ 12h để tránh lỗi timezone
+    
+    console.log('📅 Selected Date Object:', selectedDate);
+    console.log('📅 ISO String:', selectedDate.toISOString());
+    
     setCurrentDate(selectedDate);
   };
 
@@ -348,88 +324,104 @@ const AdminShowtimes = () => {
         </button>
       </div>
 
-      {/* View Mode & Date Navigation */}
-      <div className="calendar-controls">
-        <div className="view-mode-selector">
-          <button 
-            className={`mode-btn ${viewMode === 'day' ? 'active' : ''}`}
-            onClick={() => setViewMode('day')}
-          >
-            Ngày
-          </button>
-          <button 
-            className={`mode-btn ${viewMode === 'week' ? 'active' : ''}`}
-            onClick={() => setViewMode('week')}
-          >
-            Tuần
-          </button>
-          <button 
-            className={`mode-btn ${viewMode === 'month' ? 'active' : ''}`}
-            onClick={() => setViewMode('month')}
-          >
-            Tháng
-          </button>
-        </div>
-
-        <div className="date-navigation">
-          <button className="nav-btn" onClick={() => navigateDate(-1)} title="Trước">
-            <FaChevronLeft />
-          </button>
-          
-          <input
-            type="date"
-            className="date-picker-input"
-            value={currentDate.toISOString().split('T')[0]}
-            onChange={handleDatePickerChange}
-            title={viewMode === 'day' ? 'Chọn ngày' : viewMode === 'week' ? 'Chọn ngày để xem tuần đó' : 'Chọn ngày để xem tháng đó'}
-          />
-          
-          <div className="current-date-display">
-            {getDisplayDate()}
-          </div>
-          
-          <button className="nav-btn" onClick={() => navigateDate(1)} title="Sau">
-            <FaChevronRight />
-          </button>
-          <button 
-            className="today-btn" 
-            onClick={() => setCurrentDate(new Date())}
-          >
-            Hôm nay
-          </button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="filter-bar">
-        <div className="filter-group">
-          <label><FaFilter /> Rạp:</label>
-          <select 
-            value={filterCinema} 
-            onChange={(e) => setFilterCinema(e.target.value)}
-          >
-            <option value="">Tất cả rạp</option>
-            {cinemas.map(cinema => (
-              <option key={cinema._id} value={cinema._id}>
-                {cinema.name}
-              </option>
-            ))}
-          </select>
+      {/* Filter Section - Redesigned */}
+      <div className="filters-container">
+        <div className="filters-header">
+          <FaFilter className="filter-icon" />
+          <h3>Bộ lọc tìm kiếm</h3>
         </div>
         
-        <div className="filter-group">
-          <label><FaFilter /> Phim:</label>
-          <select 
-            value={filterMovie} 
-            onChange={(e) => setFilterMovie(e.target.value)}
-          >
-            <option value="">Tất cả phim</option>
-            {movies.map(movie => (
-              <option key={movie._id} value={movie._id}>
-                {movie.title}
-              </option>
-            ))}
-          </select>
+        <div className="filters-grid">
+          <div className="filter-item">
+            <label>
+              <FaCalendarAlt className="label-icon" />
+              Chọn ngày
+            </label>
+            <input
+              type="date"
+              className="filter-input"
+              value={currentDate.toISOString().split('T')[0]}
+              onChange={handleDatePickerChange}
+            />
+          </div>
+
+          <div className="filter-item">
+            <label>
+              <FaFilm className="label-icon" />
+              Chọn phim
+            </label>
+            <select 
+              className="filter-select"
+              value={filterMovie} 
+              onChange={(e) => setFilterMovie(e.target.value)}
+            >
+              <option value="">-- Tất cả phim --</option>
+              {movies.map(movie => (
+                <option key={movie._id} value={movie._id}>
+                  {movie.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-item">
+            <label>
+              <FaBuilding className="label-icon" />
+              Chọn rạp
+            </label>
+            <select 
+              className="filter-select"
+              value={filterCinema} 
+              onChange={(e) => setFilterCinema(e.target.value)}
+            >
+              <option value="">-- Tất cả rạp --</option>
+              {cinemas.map(cinema => (
+                <option key={cinema._id} value={cinema._id}>
+                  {cinema.name} - {cinema.city}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-actions">
+            <button 
+              className="btn-reset-filter"
+              onClick={() => {
+                setFilterMovie('');
+                setFilterCinema('');
+                setCurrentDate(new Date());
+              }}
+            >
+              <FaTimes /> Xóa bộ lọc
+            </button>
+          </div>
+        </div>
+
+        {/* Filter Summary */}
+        <div className="filter-summary">
+          <span className="summary-label">Đang hiển thị:</span>
+          <div className="summary-tags">
+            <span className="tag tag-date">
+              {currentDate.toLocaleDateString('vi-VN', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+              })}
+            </span>
+            {filterMovie && (
+              <span className="tag tag-movie">
+                {movies.find(m => m._id === filterMovie)?.title}
+              </span>
+            )}
+            {filterCinema && (
+              <span className="tag tag-cinema">
+                {cinemas.find(c => c._id === filterCinema)?.name}
+              </span>
+            )}
+            <span className="tag tag-count">
+              {showtimes.length} suất chiếu
+            </span>
+          </div>
         </div>
       </div>
 

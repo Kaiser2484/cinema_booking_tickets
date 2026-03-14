@@ -344,7 +344,13 @@ const AdminBookings = () => {
                 <h4>Thanh toán</h4>
                 <div className="detail-row">
                   <span>Phương thức:</span>
-                  <span>{selectedBooking.paymentMethod === 'momo' ? 'MoMo' : 'Tiền mặt'}</span>
+                  <span>
+                    {selectedBooking.paymentMethod === 'qr' ? 'QR Code' : 
+                     selectedBooking.paymentMethod === 'bank' ? 'Chuyển khoản' :
+                     selectedBooking.paymentMethod === 'momo' ? 'MoMo' :
+                     selectedBooking.paymentMethod === 'vnpay' ? 'VNPay' :
+                     selectedBooking.paymentMethod}
+                  </span>
                 </div>
                 <div className="detail-row">
                   <span>Trạng thái: </span>

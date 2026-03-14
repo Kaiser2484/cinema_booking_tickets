@@ -46,15 +46,11 @@ function testPaymentModal() {
      - Check transaction ID format
      - Click confirm button
   
-  3. Cash Payment:
-     - Read instructions
-     - Click confirm button
-  
-  4. Timeout Test:
+  3. Timeout Test:
      - Wait 15 minutes (or change timer in code)
      - Check if modal closes and shows error
   
-  5. Animation Test:
+  4. Animation Test:
      - Check fade in/out
      - Verify confetti on success page
      - Test button hover effects
@@ -70,8 +66,7 @@ const PAYMENT_CONFIG = {
   },
   timeout: {
     qr: 15 * 60, // 15 minutes
-    bank: 15 * 60,
-    cash: 30 * 60 // 30 minutes before showtime
+    bank: 15 * 60
   },
   checkInterval: 5000 // 5 seconds
 };

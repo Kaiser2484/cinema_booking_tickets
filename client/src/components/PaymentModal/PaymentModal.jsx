@@ -212,13 +212,6 @@ const PaymentModal = ({
                 <FaUniversity />
                 <span>Chuyển khoản</span>
               </button>
-              <button
-                className={`payment-method-btn ${paymentMethod === 'cash' ? 'active' : ''}`}
-                onClick={() => setPaymentMethod('cash')}
-              >
-                💵
-                <span>Tiền mặt</span>
-              </button>
             </div>
 
             {/* Payment Content */}
@@ -310,37 +303,7 @@ const PaymentModal = ({
                 </div>
               )}
 
-              {paymentMethod === 'cash' && (
-                <div className="cash-payment">
-                  <div className="cash-icon">💵</div>
-                  <h3>Thanh toán tại quầy</h3>
-                  <div className="cash-info">
-                    <p>Bạn đã chọn thanh toán bằng tiền mặt tại quầy vé.</p>
-                    <div className="payment-amount">
-                      <span>Số tiền cần thanh toán:</span>
-                      <strong>{formatPrice(bookingData.totalPrice)}</strong>
-                    </div>
-                    <div className="cash-instructions">
-                      <h4>Hướng dẫn:</h4>
-                      <ol>
-                        <li>Nhấn "Xác nhận đặt vé" để hoàn tất</li>
-                        <li>Đến quầy vé trước giờ chiếu ít nhất 30 phút</li>
-                        <li>Xuất trình mã đặt vé và thanh toán để nhận vé</li>
-                      </ol>
-                    </div>
-                    <div className="payment-note">
-                      <strong>⚠️ Lưu ý:</strong> Vui lòng thanh toán tại quầy trước giờ chiếu để tránh mất chỗ
-                    </div>
-                  </div>
-                  <button 
-                    className="btn-confirm-payment"
-                    onClick={handleManualPayment}
-                    disabled={isVerifying}
-                  >
-                    {isVerifying ? 'Đang xử lý...' : 'Xác nhận đặt vé'}
-                  </button>
-                </div>
-              )}
+
             </div>
           </>
         ) : (

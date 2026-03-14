@@ -35,7 +35,7 @@ const validateTransactionId = (transactionId) => {
 // @access  Private
 const createBooking = async (req, res) => {
   try {
-    const { showtime, seats, paymentMethod = 'cash', transactionId, paymentStatus = 'pending' } = req.body;
+    const { showtime, seats, paymentMethod = 'qr', transactionId, paymentStatus = 'pending' } = req.body;
 
     // Validate transaction ID nếu có (cho QR và Bank)
     if ((paymentMethod === 'qr' || paymentMethod === 'bank') && transactionId) {
@@ -98,13 +98,10 @@ const createBooking = async (req, res) => {
     // Tính tổng tiền
     const totalPrice = seatsWithPrice.reduce((sum, seat) => sum + seat.price, 0);
 
-    // Tạo payment expiry (15 phút cho QR/bank, 30 phút cho cash)
+    // Tạo payment expiry (15 phút cho QR/bank)
     const paymentExpiry = new Date();
     if (paymentMethod === 'qr' || paymentMethod === 'bank') {
       paymentExpiry.setMinutes(paymentExpiry.getMinutes() + 15);
-    } else if (paymentMethod === 'cash') {
-      // Cash payment expires 30 minutes before showtime
-      paymentExpiry.setTime(new Date(showtimeData.startTime).getTime() - 30 * 60 * 1000);
     }
 
     // Tạo booking

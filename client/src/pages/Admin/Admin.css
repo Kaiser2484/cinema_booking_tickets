@@ -1501,8 +1501,8 @@
   padding: 4px 12px;
   border-radius: 6px;
   font-size: 12px;
-  color: #f39c12;
-  font-weight: 600;
+  color: #ffd966;
+  font-weight: 700;
   display: block;
   margin-top: 5px;
 }
@@ -1529,7 +1529,7 @@
 }
 
 .detail-row span {
-  color: #f39c12;
+  color: #ffd966;
   font-weight: 700;
   font-size: 13px;
   text-transform: uppercase;
@@ -1537,9 +1537,10 @@
 }
 
 .detail-row strong {
-  color: #fff;
-  font-weight: 500;
+  color: #e8ecf1;
+  font-weight: 600;
   text-align: right;
+  font-size: 14px;
 }
 
 .detail-row .status-active {
@@ -1568,7 +1569,7 @@
 
 .config-body p {
   margin: 12px 0;
-  color: #ccc;
+  color: #dde2e8;
   font-size: 14px;
   display: flex;
   align-items: flex-start;
@@ -1585,7 +1586,7 @@
 }
 
 .config-body p strong {
-  color: #f39c12;
+  color: #ffd966;
   min-width: 140px;
   font-weight: 700;
   font-size: 13px;
@@ -1594,8 +1595,9 @@
 }
 
 .config-body p span {
-  color: #fff;
-  font-weight: 500;
+  color: #e8ecf1;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .config-actions {

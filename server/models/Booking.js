@@ -37,8 +37,8 @@ const bookingSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['cash', 'qr', 'bank', 'momo', 'vnpay', 'credit_card'],
-      default: 'cash'
+      enum: ['qr', 'bank', 'momo', 'vnpay', 'credit_card'],
+      default: 'qr'
     },
     transactionId: {
       type: String,
